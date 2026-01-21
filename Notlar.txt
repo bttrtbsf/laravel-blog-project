@@ -1,0 +1,121 @@
+Harika bir iş çıkardık! Bugün sadece kod yazmadık, aynı zamanda Laravel'in derinliklerindeki çalışma mantığını, hataların nasıl izleneceğini (debugging) ve profesyonel sorun çözme tekniklerini deneyimledik.
+
+İşte bugünün tüm çalışmasını, aldığımız hataları, nedenlerini ve çözümlerini içeren detaylı rapor dosyası. Bunu Gunluk_Rapor.md veya Notlar.md olarak projene kaydedebilirsin.
+
+Markdown
+
+# 📅 Proje Geliştirme Günlüğü: Laravel Blog (Admin & Frontend)
+
+**Tarih:** 4 Ocak 2026
+**Konu:** CRUD İşlemlerinin Tamamlanması, Hata Ayıklama ve Frontend Entegrasyonu
+
+---
+
+## 1. Güncelleme (Update) İşlemi ve Parametre Hatası
+
+### 🚨 Karşılaşılan Hata
+`edit` fonksiyonunu yazarken aşağıdaki hatayı aldık:
+> **Illuminate\Routing\Exceptions\UrlGenerationException**
+> Missing required parameter for [Route: admin.gonderiler.update] [URI: admin/gonderiler/{gonderiler}] [Missing parameter: gonderiler]
+
+### 🔍 Nedeni
+Laravel, `Route::resource` kullanıldığında rota parametresini otomatik olarak çoğul isimlendirmişti (`{gonderiler}`). Ancak biz Controller ve View tarafında tekil değişken (`$gonderi`) kullanınca, Laravel isim uyuşmazlığı yaşadı ve parametreyi bulamadı.
+
+### ✅ Çözüm
+Controller tarafında "Route Model Binding" (otomatik bulma) yerine **Manuel ID** yöntemine geçerek sorunu çözdük.
+
+**GonderiController.php (Son Hali):**
+```php
+public function edit($id) // Gonderi nesnesi yerine direkt ID aldık
+{
+    $gonderi = Gonderi::findOrFail($id);
+    return view('admin.gonderiler.edit', compact('gonderi'));
+}
+
+public function update(Request $request, $id)
+{
+    // ... validasyon kodları ...
+    $gonderi = Gonderi::findOrFail($id);
+    $gonderi->update([...]);
+    // ...
+}
+
+2. Silme (Delete) İşlemi ve "Hayalet" Hata
+Silme butonu için HTML formumuzu ve Controller metodumuzu hazırladık ancak ilginç bir durumla karşılaştık: Kod hata vermiyor, "Başarılı" diyor ama veritabanından veri silinmiyordu.
+
+🕵️‍♂️ Hata Ayıklama (Debugging) Adımları
+Güvenlik: @csrf ve @method('DELETE') kullanımı öğrenildi. Bunlar olmadan işlemin 419 Page Expired hatası vereceği not edildi.
+
+Rota Kontrolü: dd($id) ile ID'nin Controller'a ulaştığı doğrulandı.
+
+Veritabanı Kontrolü: php artisan tinker üzerinden delete() komutu denendi ve çalıştığı görüldü.
+
+HTML Yapısı: Formun <table> içinde yanlış yerde durup durmadığı kontrol edildi. Doğruydu (<td> içinde).
+
+Model Ayarları: Gonderi.php modeline protected $table ve protected $primaryKey tanımları eklenerek Laravel'e tablo zorla tanıtıldı.
+
+🛠️ Geçici Çözüm (Hard Fix)
+Sorunun Model katmanında olduğu düşünülerek DB::table(...) yöntemi ile doğrudan SQL sorgusu atıldı ve silme işlemi gerçekleşti.
+
+🎯 Asıl Neden ve Kesin Çözüm
+Sorunun çok küçük bir yazım hatası olduğu tespit edildi.
+
+Hatalı Kod: $gonderi->delete; (Parantez yok, değişken gibi çağrılmış).
+
+Doğru Kod: $gonderi->delete(); (Parantez var, fonksiyon çağrılmış).
+
+Parantezler eklendikten sonra Model yapısına geri dönüldü ve sistem kusursuz çalıştı.
+
+3. Frontend (Ön Yüz) Geliştirme
+Admin panelinden çıkıp, sitenin ziyaretçilere görünen yüzünü tasarladık.
+
+🏠 Anasayfa (Home)
+HomeController oluşturuldu.
+
+Sadece "Taslak Olmayan" (where('taslak', 0)) yazılar çekildi.
+
+welcome.blade.php, Tailwind CSS ile modern bir blog listesi haline getirildi.
+
+Admin Linki: Sadece giriş yapmış kullanıcılara (@auth) görünen gizli bir "Admin Paneli" kısayolu eklendi.
+
+📄 Detay Sayfası (Show)
+Her yazı için front.show isminde yeni bir rota tanımlandı.
+
+show($id) metodu ile tekil yazı verisi çekildi.
+
+{!! nl2br(e($gonderi->icerik)) !!} kullanılarak metin formatı korundu.
+
+4. Kod Özeti (Dosya Bazlı)
+routes/web.php
+PHP
+
+// Anasayfa Rotası
+Route::get('/', [HomeController::class, 'index'])->name('home');
+// Detay Rotası
+Route::get('/gonderi/{id}', [HomeController::class, 'show'])->name('front.show');
+
+// Admin Rotaları
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    Route::resource('gonderiler', GonderiController::class);
+});
+app/Models/Gonderi.php
+PHP
+
+class Gonderi extends Model
+{
+    protected $table = 'gonderiler';
+    protected $primaryKey = 'id';
+    protected $fillable = ['baslik', 'icerik', 'taslak', 'kullanici_id'];
+    
+    // İlişkiler tanımlı (kullanici, yorumlar, kategoriler vs.)
+}
+🚀 Sonuç
+Şu an elimizde;
+
+Kullanıcı girişi yapabilen,
+
+Yazı ekleyip, düzenleyip, silebilen (CRUD),
+
+Ziyaretçilere yazıları listeleyen ve detayını gösteren,
+
+Veritabanı ilişkileri hazır (Model dosyasında), Tam fonksiyonel bir Blog Altyapısı bulunmaktadır.
