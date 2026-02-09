@@ -1,8 +1,4 @@
-Harika bir iş çıkardık! Bugün sadece kod yazmadık, aynı zamanda Laravel'in derinliklerindeki çalışma mantığını, hataların nasıl izleneceğini (debugging) ve profesyonel sorun çözme tekniklerini deneyimledik.
 
-İşte bugünün tüm çalışmasını, aldığımız hataları, nedenlerini ve çözümlerini içeren detaylı rapor dosyası. Bunu Gunluk_Rapor.md veya Notlar.md olarak projene kaydedebilirsin.
-
-Markdown
 
 # 📅 Proje Geliştirme Günlüğü: Laravel Blog (Admin & Frontend)
 
@@ -119,3 +115,123 @@ Yazı ekleyip, düzenleyip, silebilen (CRUD),
 Ziyaretçilere yazıları listeleyen ve detayını gösteren,
 
 Veritabanı ilişkileri hazır (Model dosyasında), Tam fonksiyonel bir Blog Altyapısı bulunmaktadır.
+
+
+Proje Geliştirme Günlüğü: Laravel Blog Projesi
+Son Güncelleme: 21 Ocak 2026 Durum: Admin Paneli (Kullanıcı & Gönderi CRUD), Frontend Temelleri ve GitHub Yedeklemesi Tamamlandı.
+
+🏗️ Bölüm 1: Proje Anatomisi ve MVC Yapısı
+Laravel'in klasör yapısı ve projenin işleyiş mantığı kavrandı:
+
+app/Http/Controllers: Trafik polisleri (Mantık burada kurulur).
+
+resources/views: Görünen yüz (Blade dosyaları, HTML/CSS).
+
+routes/web.php: Harita (URL adreslerinin nereye gideceği).
+
+database/migrations: Veritabanı tarihçesi ve tablo yapıları.
+
+public: Dış dünyaya açık kapı (CSS, JS, Resimler).
+
+👤 Bölüm 2: Kullanıcı (User) Yönetimi ve Admin Paneli
+Adminlerin yeni üye ekleyebilmesi, düzenleyebilmesi ve silebilmesi için bir modül geliştirdik. Bu süreçte Veritabanı vs. Laravel dil uyuşmazlıkları çözüldü.
+
+🚨 Karşılaşılan Kritik Hatalar ve Çözümleri
+1. Rota Çakışması (Matruşka Hatası) 🪆
+Sorun: web.php dosyasında iç içe prefix('admin') grupları oluşturulduğu için URL /admin/admin/users haline geldi ve route('admin.users.create') bulunamadı hatası verdi.
+
+Çözüm: İçteki gereksiz grup silinerek yapı sadeleştirildi.
+
+2. Tailwind CSS ve Görünmez Butonlar 👻
+Sorun: Buton kodları doğru olmasına rağmen ekranda sadece beyaz yazı görünüyordu.
+
+Neden: Vite derleyicisi çalışmadığı için yeni eklenen bg-blue-500 gibi sınıflar işlenmemişti.
+
+Çözüm: Geliştirme sürecinde npm run dev komutunun açık kalması gerektiği öğrenildi.
+
+3. Veritabanı Dil Uyuşmazlığı (Ad vs Name) 🇹🇷🇬🇧
+Sorun: Formdan veri gönderiliyor ancak veritabanı hatası (null value in column "ad") alınıyordu.
+
+Neden: Laravel varsayılan olarak name beklerken, bizim veritabanımızda (DrawSQL şeması gereği) sütun adı ad ve soyad idi.
+
+Çözüm:
+
+View: Input isimleri name="ad", name="soyad" yapıldı.
+
+Controller: $request->ad şeklinde karşılandı.
+
+Model: $fillable dizisine ['ad', 'soyad'] eklendi.
+
+4. Rol Kaydetme Sorunu (User vs Yazar) 🎭
+Sorun: Formdan "Yazar" seçilmesine rağmen veritabanına varsayılan "User" olarak kaydoluyordu.
+
+Teşhis: dd($request->all()) kullanılarak formdan gelen verinin role olduğu, ancak veritabanının rol sütununu beklediği tespit edildi.
+
+Çözüm: Controller içinde manuel eşleştirme yapıldı:
+
+PHP
+
+'rol' => $request->role, // DB Sütunu => Form Inputu
+Ek Ayar: Migration dosyasındaki enum değerleriyle formdaki value değerlerinin (yazar/author) aynı olması sağlandı.
+
+📝 Bölüm 3: Gönderi (Post) Yönetimi
+Blog yazılarının yönetimi için CRUD (Create, Read, Update, Delete) yapısı kuruldu.
+
+🐛 Hata Ayıklama Notları
+Delete İşlemi: $gonderi->delete; yazıldığı için silme işlemi çalışmıyordu. Parantez eklenerek $gonderi->delete(); yapıldı ve düzeldi.
+
+Route Parametreleri: Route::resource otomatik olarak {gonderiler} çoğul parametresi atadı, Controller'da ID ile yakalayarak bu karmaşayı çözdük.
+
+🎨 Bölüm 4: Frontend (Ön Yüz) Entegrasyonu
+Admin paneli dışındaki ziyaretçi sayfaları tasarlandı.
+
+HomeController: Sadece taslak olmayan yazıları çeken bir yapı kuruldu.
+
+Welcome Blade: Anasayfada blog listesi Tailwind CSS ile tasarlandı.
+
+Giriş Kontrolü: Sadece giriş yapmış kullanıcılara görünen (@auth) "Dashboard" linki eklendi.
+
+☁️ Bölüm 5: Versiyon Kontrolü (Git & GitHub)
+Proje güvenli bir şekilde GitHub'a yüklendi.
+
+Güvenlik: .env dosyasının (şifrelerin olduğu yer) .gitignore sayesinde yüklenmediği teyit edildi.
+
+Komutlar:
+
+git init (Başlatma)
+
+git add . (Sahneye alma)
+
+git commit -m "..." (Kaydetme)
+
+git push (GitHub'a gönderme)
+
+💻 Güncel Kod Yapısı (Referans)
+routes/web.php (Rota Haritası)
+PHP
+
+// Ziyaretçi Sayfaları
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/gonderi/{id}', [HomeController::class, 'show'])->name('front.show');
+
+// Admin Paneli (Güvenli Alan)
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Kullanıcılar
+    Route::resource('users', UserController::class);
+    // Gönderiler
+    Route::resource('gonderiler', GonderiController::class);
+});
+app/Models/User.php (Kullanıcı Modeli)
+PHP
+
+class User extends Authenticatable
+{
+    // Veritabanı sütunları ile Laravel uyumu
+    protected $fillable = [
+        'ad',
+        'soyad',
+        'email',
+        'password',
+        'rol', // 'role' değil 'rol'
+    ];
+}

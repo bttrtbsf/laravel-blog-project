@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\GonderiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
-
+use App\Http\Controllers\Admin\KategoriController;
 // Herkese açık sayfalar
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/gonderi/{id}', [HomeController::class, 'show'])->name('front.show');
@@ -28,13 +28,10 @@ Route::middleware('auth')->group(function () {
 // 'name' ise rota isminin başına admin. koyar.
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Doğrusu bu: Direkt buraya yazıyoruz.
-    // Oluşan Rota: admin.users.index
-    // Oluşan URL: site.com/admin/users
+    
     Route::resource('users', UserController::class);
-
-    // Gönderiler de aynı şekilde
     Route::resource('gonderiler', GonderiController::class);
+    Route::resource('kategoriler',KategoriController::class);
     
 });
 
