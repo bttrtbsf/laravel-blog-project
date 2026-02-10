@@ -15,4 +15,8 @@ class Kategori extends Model
         'isim',
         'aciklama'
     ];
+    public function gonderiler()
+    {   
+        return $this->hasMany(Gonderi::class, 'kategori_id'); 
+    }
 }

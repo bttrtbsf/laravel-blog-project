@@ -28,7 +28,20 @@
                             <label class="block text-gray-700 text-sm font-bold mb-2">Başlık</label>
                             <input type="text" name="baslik" value="{{ old('baslik') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         </div>
-
+<div class="mb-4">
+    <label class="block text-gray-700 text-sm font-bold mb-2">Kategori Seçin:</label>
+    <select name="kategori_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" required>
+        <option value="">-- Bir Kategori Seçiniz --</option>
+        
+        @foreach($kategoriler as $kategori)
+            <option value="{{ $kategori->id }}">{{ $kategori->isim }}</option>
+        @endforeach
+        
+    </select>
+    @error('kategori_id')
+        <p class="text-red-500 text-xs italic">{{ $message }}</p>
+    @enderror
+</div>
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Kapak Fotoğrafı</label>
                             <input type="file" name="resim" class="w-full border border-gray-300 p-2 rounded focus:outline-none">

@@ -19,8 +19,7 @@
                 <h3 class="text-2xl font-bold text-gray-800">Yazı Listesi</h3>
                 
                 <a href="{{ route('admin.gonderiler.create') }}" 
-                   style="background-color: #4f46e5; color: white;" 
-                   class="font-bold py-2 px-4 rounded shadow hover:opacity-90 transition">
+                   class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow transition">
                     + Yeni Ekle
                 </a>
             </div>
@@ -31,13 +30,14 @@
                     <table class="w-full border-collapse border border-slate-300">
                         <thead>
                             <tr class="bg-gray-100 text-left">
-                                <th class="border border-slate-300 p-3">Resim</th>
+                                <th class="border border-slate-300 p-3 w-24">Resim</th>
                                 <th class="border border-slate-300 p-3">Başlık</th>
-                                <th class="border border-slate-300 p-3">Durum</th>
-                                <th class="border border-slate-300 p-3 text-center">İşlemler</th>
+                                <th class="border border-slate-300 p-3">Kategori</th> <th class="border border-slate-300 p-3">Durum</th>
+                                <th class="border border-slate-300 p-3 text-center w-48">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
+                            
                             @forelse ($gonderiler as $gonderi)
                                 <tr class="bg-white border-b hover:bg-gray-50 transition duration-150">
                                     
@@ -54,6 +54,12 @@
                                     </td>
                                     
                                     <td class="border border-slate-300 p-3">
+                                        <span class="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                                            {{ $gonderi->kategori ? $gonderi->kategori->isim : 'Genel' }}
+                                        </span>
+                                    </td>
+
+                                    <td class="border border-slate-300 p-3">
                                         @if($gonderi->taslak)
                                             <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">Taslak</span>
                                         @else
@@ -65,17 +71,15 @@
                                         <div class="flex justify-center items-center gap-2">
                                             
                                             <a href="{{ route('admin.gonderiler.edit', $gonderi->id) }}" 
-                                               style="background-color: #3b82f6; color: white;"
-                                               class="font-bold py-1 px-3 rounded text-sm hover:opacity-90 transition shadow-sm">
+                                               class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm transition shadow-sm">
                                                 Düzenle
                                             </a>
                                             
-                                            <form action="{{ route('admin.gonderiler.destroy', $gonderi->id) }}" method="POST" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz?');" style="display: inline-block;">
+                                            <form action="{{ route('admin.gonderiler.destroy', $gonderi->id) }}" method="POST" onsubmit="return confirm('Bu gönderiyi silmek istediğinize emin misiniz?');" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        style="background-color: #ef4444; color: white;"
-                                                        class="font-bold py-1 px-3 rounded text-sm hover:opacity-90 transition shadow-sm">
+                                                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm transition shadow-sm">
                                                     Sil
                                                 </button>
                                             </form>
@@ -85,13 +89,15 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="border border-slate-300 p-8 text-center text-gray-500">
+                                    <td colspan="5" class="border border-slate-300 p-8 text-center text-gray-500">
                                         <div class="flex flex-col items-center justify-center">
-                                            <p>Henüz hiç gönderi eklenmemiş.</p>
+                                            <p class="text-lg">Henüz hiç gönderi eklenmemiş.</p>
+                                            <p class="text-sm text-gray-400">Yeni bir yazı ekleyerek başlayabilirsiniz.</p>
                                         </div>
                                     </td>
                                 </tr>
                             @endforelse
+                            
                         </tbody>
                     </table>
 

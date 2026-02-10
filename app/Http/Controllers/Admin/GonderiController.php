@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use App\Models\Gonderi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Kategori;
 
 use function Ramsey\Uuid\v1;
 
@@ -29,7 +30,8 @@ class GonderiController extends Controller
      */
     public function create()
     {
-        return view('admin.gonderiler.create');
+        $kategoriler = Kategori::all();
+        return view('admin.gonderiler.create',compact('kategoriler'));
     }
 
     /**
@@ -43,6 +45,7 @@ class GonderiController extends Controller
             'icerik' => 'required',
             'taslak' => 'required|boolean',
             'resim'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'kategori_id' => 'required|exists:kategoriler,id',
         ]);
         if($request->hasFile('resim')){
             $dosyaYolu = $request->file('resim')->store('gonderiler','public');
@@ -70,7 +73,8 @@ class GonderiController extends Controller
     public function edit($id)
     {
         $gonderi = Gonderi::findOrFail($id);
-        return view('admin.gonderiler.edit', compact('gonderi'));   
+        $kategoriler = Kategori::all();
+        return view('admin.gonderiler.edit', compact('gonderi','kategoriler'));   
     }
 
     /**
@@ -82,12 +86,14 @@ class GonderiController extends Controller
             'baslik' => 'required | max:255',
             'icerik' => 'required',
             'taslak' => 'required | boolean',
+            'kategori_id' => 'required|exists:kategoriler,id',
         ]);
         $gonderi = Gonderi::findOrFail($id);
         $gonderi->update([
             'baslik' => $request->baslik,
             'icerik' => $request->icerik,
             'taslak' => $request->taslak,
+            'kategori_id' => $request->kategori_id
         ]);
         return redirect()->route('admin.gonderiler.index')
             ->with('success','Gönderi Güncellendi');

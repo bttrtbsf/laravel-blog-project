@@ -36,6 +36,17 @@
                         </div>
 
                         <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Kategori:</label>
+    <select name="kategori_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline">
+        
+        @foreach($kategoriler as $kategori)
+            <option value="{{ $kategori->id }}" 
+                {{ $gonderi->kategori_id == $kategori->id ? 'selected' : '' }}> 
+                {{ $kategori->isim }}
+            </option>
+        @endforeach
+
+    </select>
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="taslak">Durum</label>
                             <select name="taslak" id="taslak" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 <option value="0" {{ $gonderi->taslak == 0 ? 'selected' : '' }}>Yayınla</option>

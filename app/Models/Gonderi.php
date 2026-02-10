@@ -14,7 +14,7 @@ class Gonderi extends Model
     protected $primaryKey = 'id';
 
     // 2. Toplu eklemeye izin verilen alanlar (Sequelize model definition gibi)
-    protected $fillable = ['baslik', 'icerik', 'taslak', 'kullanici_id','resim'];
+    protected $fillable = ['baslik', 'icerik', 'taslak', 'kullanici_id','resim','kategori_id'];
 
     // İLİŞKİLER
 
@@ -46,5 +46,9 @@ class Gonderi extends Model
     public function etiketler()
     {
         return $this->belongsToMany(Etiket::class, 'gonderi_etiket', 'gonderi_id', 'etiket_id');
+    }   
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class,'kategori_id');
     }
 }
